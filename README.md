@@ -2,5 +2,5 @@
 
     * Cute program, works everywhere.
     * Alternative darkweb for new users.
-    * Unattainable pancake.
+    * Uneatable pancake.
     * A proxy net for fer_net websites. :3
