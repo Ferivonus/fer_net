@@ -276,18 +276,22 @@ async fn main() -> std::io::Result<()> {
     db::add_user("ferivonus", "password123").await;
 
     HttpServer::new(move || {
+        let auth = HttpAuthentication::bearer(validator);
+
         App::new()
-            .wrap(HttpAuthentication::bearer(validator))
             .app_data(web::Data::new(registered_nodes.clone()))
             .app_data(web::Data::new(active_nodes.clone()))
-            .service(user_handlers::login) // login dışarda olabilir, auth istemez
-            .service(user_handlers::hello) // örnek protected endpoint
             .service(index)
             .service(health)
             .service(register)
-            .service(ws_index)
-            .service(nodes_endpoint)
-            .service(registered_nodes_endpoint)
+            // korumalı yollar
+            .service(
+                web::scope("")
+                    .wrap(auth)
+                    .service(ws_index)
+                    .service(nodes_endpoint)
+                    .service(registered_nodes_endpoint),
+            )
     })
     .bind(addr)?
     .run()
