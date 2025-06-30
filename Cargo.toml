@@ -16,3 +16,4 @@ uuid = { version = "1.0", features = [
     "v4",
 ] } # For UUID generation and serialization
 dotenv = "0.15" # For loading environment variables
+tokio = "1.45.1"
