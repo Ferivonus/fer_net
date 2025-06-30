@@ -4,8 +4,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-actix-web = "4.11.0"
-serde = { version = "1.0.219", features = ["derive"] }
-serde_json = "1.0.140"
-uuid = { version = "1.17.0", features = ["v4", "serde"] } # ← dikkat buraya
-dotenv = "0.15"
+actix = "0.13.5" # Core Actix actor framework
+actix-web = "4.11.0" # Web framework
+actix-web-actors = "4.3.0" # WebSocket support for Actix Web
+serde = { version = "1.0", features = [
+    "derive",
+] } # For serialization/deserialization
+serde_json = "1.0" # For JSON operations
+uuid = { version = "1.0", features = [
+    "serde",
+    "v4",
+] } # For UUID generation and serialization
+dotenv = "0.15" # For loading environment variables
