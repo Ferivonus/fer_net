@@ -16,17 +16,53 @@ type ProxyStack = Arc<Mutex<Vec<ProxyNode>>>;
 
 #[get("/")]
 async fn index() -> impl Responder {
-    let endpoints = serde_json::json!({
-        "endpoints": {
-            "GET /": "This help message",
-            "GET /health": "Health check (returns OK)",
-            "POST /register": "Register a new proxy node",
-            "GET /stacked": "List all proxies in LIFO (stack) order",
-            "GET /all-proxy-points": "List all proxy IP:PORT combinations"
-        }
-    });
+    let html = r#"
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Ferivonus Proxy API</title>
+        <style>
+            body {
+                background-color: #0d0d0d;
+                color: #00ffcc;
+                font-family: monospace;
+                padding: 40px;
+            }
+            h1 {
+                color: #ff00ff;
+            }
+            ul {
+                list-style-type: square;
+            }
+            li {
+                margin-bottom: 10px;
+            }
+            code {
+                background: #1a1a1a;
+                padding: 2px 6px;
+                border-radius: 4px;
+                color: #00ffcc;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Ferivonus Proxy Network API</h1>
+        <p>Welcome to the API hub. Here are the available endpoints:</p>
+        <ul>
+            <li><code>GET /</code> – This help page</li>
+            <li><code>GET /health</code> – Health check (returns OK)</li>
+            <li><code>POST /register</code> – Register a new proxy node</li>
+            <li><code>GET /stacked</code> – List all proxies in LIFO (stack) order</li>
+            <li><code>GET /all-proxy-points</code> – Show all proxy endpoints as ip:port</li>
+        </ul>
+        <p style="margin-top: 40px; font-size: 12px;">Ferivonus Proxy System - powered by Rust + Actix Web</p>
+    </body>
+    </html>
+    "#;
 
-    HttpResponse::Ok().json(endpoints)
+    HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(html)
 }
 
 /// Simple health check
