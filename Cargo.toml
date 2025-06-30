@@ -16,4 +16,10 @@ uuid = { version = "1.0", features = [
     "v4",
 ] } # For UUID generation and serialization
 dotenv = "0.15" # For loading environment variables
-tokio = "1.45.1"
+
+jsonwebtoken = "9.3.1"
+bcrypt = "0.17.0"
+lazy_static = "1.4"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+actix-web-httpauth = "0.8.2"
+chrono = "0.4.41"

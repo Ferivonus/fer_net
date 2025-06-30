@@ -8,6 +8,14 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
+mod auth;
+mod db;
+mod models;
+mod user_handlers;
+
+use crate::auth::validator;
+use actix_web_httpauth::middleware::HttpAuthentication;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct RegisteredNode {
     id: Uuid,
@@ -264,11 +272,16 @@ async fn main() -> std::io::Result<()> {
 
     let registered_nodes: RegisteredNodes = Arc::new(Mutex::new(HashMap::new()));
     let active_nodes: ActiveNodes = Arc::new(Mutex::new(HashMap::new()));
+    // Test kullanıcı ekle (prod’da DB’den çekilecek)
+    db::add_user("ferivonus", "password123").await;
 
     HttpServer::new(move || {
         App::new()
+            .wrap(HttpAuthentication::bearer(validator))
             .app_data(web::Data::new(registered_nodes.clone()))
             .app_data(web::Data::new(active_nodes.clone()))
+            .service(user_handlers::login) // login dışarda olabilir, auth istemez
+            .service(user_handlers::hello) // örnek protected endpoint
             .service(index)
             .service(health)
             .service(register)
