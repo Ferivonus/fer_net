@@ -191,6 +191,13 @@ async fn nodes_endpoint(data: web::Data<ActiveNodes>) -> impl Responder {
     HttpResponse::Ok().json(list)
 }
 
+#[get("/registered-nodes")]
+async fn registered_nodes_endpoint(data: web::Data<RegisteredNodes>) -> impl Responder {
+    let guard = data.lock().await;
+    let list: Vec<RegisteredNode> = guard.values().cloned().collect();
+    HttpResponse::Ok().json(list)
+}
+
 #[get("/health")]
 async fn health() -> impl Responder {
     HttpResponse::Ok().body("OK")
@@ -266,6 +273,7 @@ async fn main() -> std::io::Result<()> {
             .service(register)
             .service(ws_index)
             .service(nodes_endpoint)
+            .service(registered_nodes_endpoint)
     })
     .bind(addr)?
     .run()
