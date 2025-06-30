@@ -229,7 +229,8 @@ async fn index() -> impl Responder {
                 color: #ff00ff;
             }
             ul {
-                list-style-type: square;
+                list-style-type: none;
+                padding-left: 0;
             }
             li {
                 margin-bottom: 10px;
@@ -240,18 +241,24 @@ async fn index() -> impl Responder {
                 border-radius: 4px;
                 color: #00ffcc;
             }
+            .secure {
+                color: #00ff00;
+            }
+            .public {
+                color: #ffcc00;
+            }
         </style>
     </head>
     <body>
         <h1>Ferivonus Proxy Network API</h1>
         <p>Available endpoints:</p>
         <ul>
-            <li><code>GET /</code> - This page</li>
-            <li><code>GET /health</code> - Health check</li>
-            <li><code>POST /register</code> - Register proxy node (id, password, mac_id)</li>
-            <li><code>GET /ws/</code> - WebSocket for proxy nodes (requires auth message)</li>
-            <li><code>GET /nodes</code> - List active proxy nodes</li>
-            <li><code>GET /registered-nodes</code> - List all registered nodes</li>
+            <li><code class="public">GET /</code> - This page (public)</li>
+            <li><code class="public">GET /health</code> - Health check (public)</li>
+            <li><code class="public">POST /register</code> - Register proxy node (id, password, mac_id) (requires API key)</li>
+            <li><code class="secure">GET /ws/</code> - WebSocket for proxy nodes (requires authentication)</li>
+            <li><code class="secure">GET /nodes</code> - List active proxy nodes (requires authentication)</li>
+            <li><code class="secure">GET /registered-nodes</code> - List all registered nodes (requires authentication)</li>
         </ul>
     </body>
     </html>
