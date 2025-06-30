@@ -1,49 +1,71 @@
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
-use dotenv::dotenv;
-use std::env;
+use serde::{Deserialize, Serialize};
+use std::sync::{Arc, Mutex};
+use uuid::Uuid;
 
-// GET /
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Actix is running on Railway!")
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct ProxyNode {
+    id: Uuid,
+    name: String,
+    ip: String,
+    port: u16,
+    active: bool,
 }
 
-// GET /ping
-#[get("/ping")]
-async fn ping() -> impl Responder {
-    HttpResponse::Ok().body("pong")
+type ProxyStack = Arc<Mutex<Vec<ProxyNode>>>;
+
+/// Simple health check
+#[get("/health")]
+async fn health() -> impl Responder {
+    HttpResponse::Ok().body("OK")
 }
 
-// GET /greet/{name}
-#[get("/greet/{name}")]
-async fn greet(path: web::Path<String>) -> impl Responder {
-    let name = path.into_inner();
-    HttpResponse::Ok().body(format!("Hello, {}!", name))
+/// Register a new proxy node
+#[post("/register")]
+async fn register(proxy: web::Json<ProxyNode>, data: web::Data<ProxyStack>) -> impl Responder {
+    let mut stack = data.lock().unwrap();
+    let mut new_proxy = proxy.into_inner();
+    new_proxy.id = Uuid::new_v4();
+    stack.push(new_proxy);
+    HttpResponse::Ok().body("Proxy registered successfully")
 }
 
-// POST /echo
-#[post("/echo")]
-async fn echo(body: String) -> impl Responder {
-    HttpResponse::Ok().body(format!("Received: {}", body))
+/// Return the stack of all proxy nodes (LIFO order)
+#[get("/stacked")]
+async fn stacked(data: web::Data<ProxyStack>) -> impl Responder {
+    let stack = data.lock().unwrap();
+    let reversed: Vec<ProxyNode> = stack.iter().rev().cloned().collect();
+    HttpResponse::Ok().json(reversed)
+}
+
+/// Show all proxy points as "ip:port"
+#[get("/all-proxy-points")]
+async fn proxy_points(data: web::Data<ProxyStack>) -> impl Responder {
+    let stack = data.lock().unwrap();
+    let points: Vec<String> = stack
+        .iter()
+        .map(|p| format!("{}:{}", p.ip, p.port))
+        .collect();
+    HttpResponse::Ok().json(points)
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // Load variables from .env file
-    dotenv().ok();
-
-    // Get the PORT from environment or use default
-    let port = env::var("PORT").unwrap_or_else(|_| "8000".to_string());
+    dotenv::dotenv().ok();
+    let port = std::env::var("PORT").unwrap_or_else(|_| "8000".to_string());
     let addr = format!("0.0.0.0:{}", port);
 
-    println!("Server listening on: {}", addr);
+    println!("Listening on: {}", addr);
 
-    HttpServer::new(|| {
+    let stack: ProxyStack = Arc::new(Mutex::new(Vec::new()));
+
+    HttpServer::new(move || {
         App::new()
-            .service(hello)
-            .service(ping)
-            .service(greet)
-            .service(echo)
+            .app_data(web::Data::new(stack.clone()))
+            .service(health)
+            .service(register)
+            .service(stacked)
+            .service(proxy_points)
     })
     .bind(addr)?
     .run()
