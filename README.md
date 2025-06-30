@@ -1,4 +1,4 @@
-# fer_net
+# fer_net proxy
 
 - Cute program, works everywhere.
 - Alternative darkweb for new users.
