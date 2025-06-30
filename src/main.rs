@@ -14,6 +14,21 @@ struct ProxyNode {
 
 type ProxyStack = Arc<Mutex<Vec<ProxyNode>>>;
 
+#[get("/")]
+async fn index() -> impl Responder {
+    let endpoints = serde_json::json!({
+        "endpoints": {
+            "GET /": "This help message",
+            "GET /health": "Health check (returns OK)",
+            "POST /register": "Register a new proxy node",
+            "GET /stacked": "List all proxies in LIFO (stack) order",
+            "GET /all-proxy-points": "List all proxy IP:PORT combinations"
+        }
+    });
+
+    HttpResponse::Ok().json(endpoints)
+}
+
 /// Simple health check
 #[get("/health")]
 async fn health() -> impl Responder {
@@ -62,6 +77,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(stack.clone()))
+            .service(index)
             .service(health)
             .service(register)
             .service(stacked)
