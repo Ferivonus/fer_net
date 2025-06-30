@@ -1,20 +1,46 @@
-use actix_web::{get, App, HttpServer, Responder, HttpResponse};
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 
+// GET /
 #[get("/")]
 async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Railway'de Actix çalışıyor!")
+    HttpResponse::Ok().body("Actix is running on Railway!")
+}
+
+// GET /ping
+#[get("/ping")]
+async fn ping() -> impl Responder {
+    HttpResponse::Ok().body("pong")
+}
+
+// GET /greet/{name}
+#[get("/greet/{name}")]
+async fn greet(path: web::Path<String>) -> impl Responder {
+    let name = path.into_inner();
+    HttpResponse::Ok().body(format!("Hello, {}!", name))
+}
+
+// POST /echo
+#[post("/echo")]
+async fn echo(body: String) -> impl Responder {
+    HttpResponse::Ok().body(format!("Received: {}", body))
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // Railway `PORT` ortam değişkeni verir
+    // Railway provides a `PORT` environment variable
     let port = std::env::var("PORT").unwrap_or_else(|_| "8000".to_string());
     let addr = format!("0.0.0.0:{}", port);
 
-    println!("Listening on: {}", addr);
+    println!("Server listening on: {}", addr);
 
-    HttpServer::new(|| App::new().service(hello))
-        .bind(addr)?
-        .run()
-        .await
+    HttpServer::new(|| {
+        App::new()
+            .service(hello)
+            .service(ping)
+            .service(greet)
+            .service(echo)
+    })
+    .bind(addr)?
+    .run()
+    .await
 }
