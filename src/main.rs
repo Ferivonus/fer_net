@@ -243,6 +243,7 @@ async fn index() -> impl Responder {
             <li><code>POST /register</code> - Register proxy node (id, password, mac_id)</li>
             <li><code>GET /ws/</code> - WebSocket for proxy nodes (requires auth message)</li>
             <li><code>GET /nodes</code> - List active proxy nodes</li>
+            <li><code>GET /registered-nodes</code> - List all registered nodes</li>
         </ul>
     </body>
     </html>
