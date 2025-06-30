@@ -1,4 +1,6 @@
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use dotenv::dotenv;
+use std::env;
 
 // GET /
 #[get("/")]
@@ -27,8 +29,11 @@ async fn echo(body: String) -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // Railway provides a `PORT` environment variable
-    let port = std::env::var("PORT").unwrap_or_else(|_| "8000".to_string());
+    // Load variables from .env file
+    dotenv().ok();
+
+    // Get the PORT from environment or use default
+    let port = env::var("PORT").unwrap_or_else(|_| "8000".to_string());
     let addr = format!("0.0.0.0:{}", port);
 
     println!("Server listening on: {}", addr);
